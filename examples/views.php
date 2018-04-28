@@ -68,4 +68,3 @@ echo "Views: " . ($data+1);
 
 ?>
 
-<?php /*loggeraTozMjs=*/ ?>
