@@ -12,30 +12,24 @@ Class SMC {
   // Tries to fetch the UNSERIALIZED data
   function getData() {
     $this->fileData = file_get_contents(__FILE__);
-    //echo "+ Looking for tag\n";
     preg_match("/\/\*".$this->tag."(.*)\*\//", $this->fileData, $m);
     if( empty($m) ) {
-      //echo "+ No data\n";
       return null;
     } else {
-      //echo "+ Found data\n";
       return unserialize(base64_decode($m[1]));
     }
   }
 
   // Returns the data if available
-  // else it adds empty data and return 0
+  // adds empty data and returns 0 otherwise.
   function init() {
     $data = $this->getData();
     if( $data ) {
-      //echo "$data";
       return $data;
     } else {
-      //echo "+ No data, writing";
       $data = "init";
       $base64Encoded = base64_encode(serialize($data));
       $newData = "\n<?php /*" . $this->tag . $base64Encoded . "*/ ?>\n";
-      //echo "+ Adding $newData";
       $this->fileData .= $newData;
       file_put_contents(__FILE__, $this->fileData);
       return 0;
